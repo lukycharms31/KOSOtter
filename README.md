@@ -8,6 +8,7 @@ This requires kOS to have a Trajectories addon, which is not in kOS 0.19.3, but 
 
 To use, download or1.ks, oc1.ks, and land_lib.ks and in your KSP directory put them under Ships/Script. Download the ship file and put it in the Ships folder of your save.
 
+Make sure to setup action groups.
 Set Physics Range Extender to 200. 
 Launch the vehicle and activate the decoupler allowing the two stages to dock. 
 Check if your first stage engines are in the right staging order, if not place them into a first stage. 

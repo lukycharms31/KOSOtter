@@ -1,6 +1,6 @@
 This is a script for kOS that can autonomously land a rocket.
 
-Video of this in action: 
+Video of this in action: https://youtu.be/kNVjwnXZGQM
 
 Script is tuned for this ship: https://kerbalx.com/lukycharms31/Otter-7
 

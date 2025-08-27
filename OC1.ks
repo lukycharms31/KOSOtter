@@ -1,10 +1,10 @@
 //Original Craft Youtube video: https://www.youtube.com/watch?v=-v85HOATx4M&list=LL&index=25&t=1s
 //Original Craft Github: https://github.com/CalebJ2/kOS-landing-script
-//Original Craft SpaceX: https://kerbalx.com/Caleb9000/kOS2
+//Original Craft KerbalX: https://kerbalx.com/Caleb9000/kOS2
 //Script Optimized for "Otter 7" 
-//Youtube: 
-//Github: 
-//SpaceX: https://kerbalx.com/lukycharms31/Otter-7
+//Youtube: https://youtu.be/kNVjwnXZGQM
+//Github: https://github.com/lukycharms31/KOSOtter
+//KerbalX: https://kerbalx.com/lukycharms31/Otter-7
 
 clearScreen.
 print "Waiting" at(0,9).

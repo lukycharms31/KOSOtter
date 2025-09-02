@@ -39,12 +39,13 @@ RCS OFF.
 
 SET payload TO 0. //Make this the amount of liquid fuel in payload/third stage.
 LOCK radar TO terrainDist().
-SET radarOffset TO 13.805.//ship:altitude - radar. //rocket should be on ground at this point
+SET radarOffset TO 14.//ship:altitude - radar. //rocket should be on ground at this point
 LOCK trueRadar TO alt:radar - radarOffset.			// Offset radar to get distance from gear to ground
 SET launchPad TO latlng(-0.195570702220158, -74.4851394526656).//LATLNG(-0.0972077635067718, -74.5576726244574).
 SET launchPad2 TO latlng(-0.195570702220158, -74.5576726244574).
 LOCK targetDist TO geoDistance(launchPad, ADDONS:TR:IMPACTPOS).
-LOCK targetDir TO geoDir(ADDONS:TR:IMPACTPOS, launchPad).
+LOCK targetDist2 TO geoDistance(launchPad2, ADDONS:TR:IMPACTPOS).
+LOCK targetDir TO geoDir(ADDONS:TR:IMPACTPOS, launchPad2).
 SET cardVelCached TO cardVel().
 SET targetDistOld TO 0.
 
@@ -61,15 +62,11 @@ SET ag2 TO false.
 SET ag3 TO false.
 SET ag4 TO false.
 SET ag5 TO false.
-SET ag9 TO false.
 SET ag10 TO false.
 WAIT 0.1.
 SET ag2 TO true.
 SET updateSettings TO true.
 
-SET climbPID TO PIDLOOP(0.4, 0.3, 0.005, 0, 1). //Controls vertical speed
-SET hoverPID TO PIDLOOP(1, 0.01, 0.0, -15, 15). //Controls altitude by changing climbPID setpoint
-SET hoverPID:SETPOINT TO 82. //87 is the altitude about 7 meters above launch pad
 SET eastVelPID TO PIDLOOP(3, 0.01, 0.0, -35, 35). //Controls horizontal speed by tilting rocket
 SET northVelPID TO PIDLOOP(3, 0.01, 0.0, -35, 35).
 SET eastPosPID TO PIDLOOP(1700, 0, 100, -30, 30). //controls horizontal position by changing velPID setpoints
@@ -86,29 +83,28 @@ WHEN runMode = 6 THEN { //launch
     WHEN SHIP:altitude > 300 THEN{ //pitch over
         SET runMode TO 5.
         SET ag4 TO true.
-	    WHEN SHIP:LIQUIDFUEL < 120 + 180 + payload AND SHIP:LIQUIDFUEL > 0 + 180 + payload THEN { //boostback
-            PRINT ROUND(SHIP:LIQUIDFUEL -180 - payload, 2) AT(0,14).
+	    WHEN SHIP:LIQUIDFUEL < 121 + 180 + payload AND SHIP:LIQUIDFUEL > 0 + 180 + payload THEN { //boostback
+            //PRINT ROUND(SHIP:LIQUIDFUEL -180 - payload, 2) AT(0,14).
 		    SET thrott TO 0.
 		    SET runMode TO 4.
 		    SET updateSettings TO true.
 		    WHEN runMode = 3 THEN { //falling pt1
-                PRINT ROUND(SHIP:LIQUIDFUEL, 2) AT(0,15).
+                //PRINT ROUND(SHIP:LIQUIDFUEL, 2) AT(0,15).
 			    SET updateSettings TO true.
 			    SET thrott TO 0.
-                WHEN SHIP:ALTITUDE <= 4600 THEN { //falling pt2
+                WHEN ship:altitude < 7300 THEN { //falling pt2
                     SET updateSettings TO true.
                     SET runMode TO 2.
 			        WHEN sBurnDist > radar - radarOffset + 50 AND SHIP:VERTICALSPEED < -5 THEN { //hoverslam
-                        PRINT ROUND(RADAR - RADAROFFSET, 2) AT(0,17).
+                        //PRINT ROUND(RADAR - RADAROFFSET, 2) AT(0,17).
 				        SET runMode TO 1.
 				        SET updateSettings TO true.
-				        WHEN SHIP:VERTICALSPEED > -1 THEN { //landed
-                            PRINT ROUND(SHIP:LIQUIDFUEL, 2) AT(0,16).
-                            PRINT ROUND(RADAR - RADAROFFSET, 2) AT(0,18).
-					        SET runMode TO 0.
-						    WHEN SHIP:STATUS = "LANDED" THEN { //still landed
-                                SET ag10 TO true.
-							    SET runMode TO 0.
+				        WHEN SHIP:VERTICALSPEED > -0.2 THEN { //landing
+                            //PRINT ROUND(SHIP:LIQUIDFUEL, 2) AT(0,16).
+                            //PRINT ROUND(RADAR - RADAROFFSET, 2) AT(0,18).
+					        SET thrott TO 0.
+							SET runMode to 0.
+						    WHEN runMode = 0 THEN { //landed
 							    SET updateSettings TO true.
 							    SET thrott TO 0.
 							    RCS OFF.
@@ -158,29 +154,30 @@ UNTIL stopLoop = true { //Main loop
             WAIT 1.
             SET ag5 TO true.
             WAIT 2.
+			SET newvess TO vessel("Otter 7 Sat").
 			SET updateSettings TO false.
 		}
 		if ADDONS:TR:HASIMPACT = true { //If ship will hit ground
 			SET steeringDir TO targetDir - 180. //point towards launch pad
-			SET steeringPitch TO -25.
+			SET steeringPitch TO -20.
 			if VANG(HEADING(steeringDir,steeringPitch):VECTOR, SHIP:FACING:VECTOR) < 25 {  //wait until pointing in right direction
-				SET thrott TO targetDist / 5000 + 0.2.
+				SET thrott TO targetDist2 / 5000 + 0.2.
 			} else {
 				SET thrott TO 0.
 			}
-			if targetDist < 2000 {
+			if targetDist2 < 2000 {
 				wait 0.2.
 				SET thrott TO 0.
 				SET runMode TO 3.
 			}
-			SET targetDistOld TO targetDist.
+			SET targetDistOld TO targetDist2.
 		}
 	}
 	if runMode = 3 { //falling pt1
 		SET shipProVec TO (SHIP:VELOCITY:SURFACE * -1):NORMALIZED.
 		if SHIP:VERTICALSPEED < -10 {
 			SET launchPadVect TO (launchPad2:POSITION - ADDONS:TR:IMPACTPOS:POSITION):NORMALIZED. //vector with magnitude 1 from impact to launchpad2
-			SET rotateBy TO MIN(targetDist*2, 15). //how many degrees to rotate the steeringVect
+			SET rotateBy TO MIN(targetDist2*2, 15). //how many degrees to rotate the steeringVect
 			PRINT "rotateBy: " + rotateBy at(0,7).
 			SET steeringVect TO shipProVec * 40. //velocity vector lengthened
 			SET loopCount TO 0.
@@ -232,10 +229,10 @@ UNTIL stopLoop = true { //Main loop
 	}
 	if runMode = 1 {//hover slam 
 		if updateSettings = true {
-			SET eastVelPID:MINOUTPUT TO -5.
-			SET eastVelPID:MAXOUTPUT TO 5.
-			SET northVelPID:MINOUTPUT TO -5.
-			SET northVelPID:MAXOUTPUT TO 5.
+			SET eastVelPID:MINOUTPUT TO -2.5.
+			SET eastVelPID:MAXOUTPUT TO 2.5.
+			SET northVelPID:MINOUTPUT TO -2.5.
+			SET northVelPID:MAXOUTPUT TO 2.5.
 			SET steeringDir TO 0.
 			SET steeringPitch TO 90.
 			LOCK STEERING TO HEADING(steeringDir,steeringPitch).
@@ -247,12 +244,13 @@ UNTIL stopLoop = true { //Main loop
 		steeringPIDs().
 	}
 	if runMode = 0 { //landed
-        wait 2.
 		SET thrott TO 0.
-        SET KUniverse:ACTIVEVESSEL TO VESSEL("Otter 7 Sat").
+		SET ag10 TO true.
+		wait 2.
+        KUniverse:forcesetactivevessel(newvess).
         SET updateSettings TO false.
-        wait 1.
-        //SET stopLoop to true.
+		WAIT 0.1.
+        SET stopLoop to true.
 	}
 
 	printData2().
@@ -261,9 +259,8 @@ UNTIL stopLoop = true { //Main loop
 function printData2 {
 	PRINT "runMode: " + runMode AT(0,1).
 	PRINT "radar: " + ROUND(radar, 4) AT(0,2).
-
 	PRINT "sBurnDist: " + ROUND(sBurnDist, 4) AT(0,3).
-	PRINT "Vertical speed target: " + ROUND(climbPID:SETPOINT, 4) AT(0,4).
+	PRINT "HORIZONTALSPEED: " + ROUND(SHIP:groundspeed, 4) AT(0,4).
 	PRINT "VERTICALSPEED: " + ROUND(SHIP:VERTICALSPEED, 4) AT(0,5).
 	if ADDONS:TR:HASIMPACT = true { PRINT "Impact point dist from pad: " + ROUND(targetDist,4) at(0,6). }
 }

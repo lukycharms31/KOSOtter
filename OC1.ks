@@ -21,6 +21,21 @@ SET ExtraOffset TO 0. // Raise for faster, less accurate burning. (don't go over
 SET accuracy TO 100. // Meters of difference between apoapsis and periapsis the script can stop at.
 SET apotarg TO 85000. // Target apoapsis height. 
 
+//THESE LINES MAKE PHYSICS RANGE EXTENDER NOT NEEDED TO FLY. DON'T USE PHYSICS RANGE EXTENDER ANYMORE. THANK YOU u/nuggreat FOR THE SUGGESTION.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:FLYING:UNLOAD TO 200000.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:FLYING:LOAD TO 199500.
+WAIT 0.001.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:FLYING:PACK TO 199999.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:FLYING:UNPACK TO 199000.
+WAIT 0.001.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:SUBORBITAL:UNLOAD TO 200000.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:SUBORBITAL:LOAD TO 199500.
+WAIT 0.001.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:SUBORBITAL:PACK TO 199999.
+SET KUNIVERSE:DEFAULTLOADDISTANCE:SUBORBITAL:UNPACK TO 199000.
+WAIT 0.001.
+//THESE LINES MAKE PHYSICS RANGE EXTENDER NOT NEEDED TO FLY. DON'T USE PHYSICS RANGE EXTENDER ANYMORE. THANK YOU u/nuggreat FOR THE SUGGESTION.
+
 SET stopLoop TO false.
 //0 = crash, 1 = burn 3(deorbit), 2 = deploy playload, 3 = burn 2(circularize), 4 = coast, 5 = burn 1(raise apoapsis), 6 = launching
 SET runMode TO 6.
@@ -38,7 +53,7 @@ WHEN STAGE:NUMBER = 2 THEN { //burn 1(raise apoapsis)
         WHEN KUniverse:ACTIVEVESSEL = VESSEL("Otter 7 Sat") THEN { //burn 2(circularize)
             SET updateSettings TO true.
             SET runMode TO 3.
-            WHEN ship:periapsis > ship:apoapsis-2500 THEN { //deploy payload
+            WHEN ship:periapsis > ship:apoapsis-3000 THEN { //deploy payload
                 SET updateSettings TO true.
                 SET runMode TO 2.
                 WHEN runMode = 1 THEN { //burn 3(deorbit)
